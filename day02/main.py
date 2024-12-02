@@ -1,5 +1,3 @@
-from collections import Counter
-
 test_data = """7 6 4 2 1
 1 2 7 8 9
 9 7 6 2 1
