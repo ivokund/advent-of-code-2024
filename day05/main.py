@@ -38,80 +38,65 @@ def parse(text):
 
 def breaks_any_rule(rules, number, list_before, list_after):
     def breaks_rule(rule):
-        if rule[0] == number:  # rule[1] must not be present in list_before
+        if rule[0] == number:
             return rule[1] in list_before
-        if rule[1] == number:  # rule[0] must not be present in list_after
+        if rule[1] == number:
             return rule[0] in list_after
         return False
+
     return any(breaks_rule(rule) for rule in rules)
 
 
 def get_valid_and_invalid(rules, updates):
     def update_breaks_any_rule(update):
         for i, number in enumerate(update):
-            if breaks_any_rule(rules, number, update[:i], update[i+1:]):
+            if breaks_any_rule(rules, number, update[:i], update[i + 1:]):
                 return True
         return False
+
     incorrect_updates = [update for update in updates if update_breaks_any_rule(update)]
     correct_updates = [update for update in updates if update not in incorrect_updates]
     return correct_updates, incorrect_updates
 
 
-def get_middle_element(update):
-    count = len(update)
-    return update[count // 2]
+def get_middle_sum(updates):
+    return sum([update[len(update) // 2] for update in updates])
 
 
 def part1(text):
     rules, updates = parse(text)
     correct_updates, _ = get_valid_and_invalid(rules, updates)
-    middles = [get_middle_element(update) for update in correct_updates]
+    return get_middle_sum(correct_updates)
 
-    return sum(middles)
 
 def part2(text):
     rules, updates = parse(text)
     _, incorrect_updates = get_valid_and_invalid(rules, updates)
 
     def sort_update(update):
+        #  find rules that reference any numbers in the update
         used_rules = list(filter(lambda rule: rule[0] in update and rule[1] in update, rules))
-        print("used rules", list(used_rules))
-        print("update", update)
-
+        #  start from the end
         last_number = next(num for num in update if num not in [rule[0] for rule in used_rules])
-        print("last", last_number)
-        stack = update.copy()
-        stack.remove(last_number)
+        stack = [num for num in update if num != last_number]
         sorted_update = [last_number]
         while len(stack) > 0:
-            print("=== INSIDE LOOP ===")
-            print("-- stack", stack)
-            first_element = sorted_update[0]
-            print("-- first", first_element)
-            # find candidates of used rules that have first_element as its last element
-            candidates = [rule[0] for rule in used_rules if rule[1] == first_element]
-            print("-- candidates", candidates)
-            correct_candidates = [candidate for candidate in candidates if not
-                                  breaks_any_rule(
-                                      used_rules,
-                                      candidate,
-                                      [x for x in stack if x != candidate],
-                                      sorted_update
-                                  )]
-            print("-- correct candidates", list(correct_candidates))
-            if len(correct_candidates) != 1:
-                raise Exception("Incorrect number of correct candidates")
-
-            stack.remove(correct_candidates[0])
-            sorted_update = correct_candidates + sorted_update
+            #  find what could be potentially preceding the first number
+            candidates = [rule[0] for rule in used_rules if rule[1] == sorted_update[0]]
+            match = [candidate for candidate in candidates if not breaks_any_rule(
+                used_rules,
+                candidate,
+                [x for x in stack if x != candidate],
+                sorted_update
+            )][0]
+            stack.remove(match)
+            sorted_update = [match] + sorted_update
         return sorted_update
 
-    updates = [sort_update(update) for update in incorrect_updates]
-    middles = [get_middle_element(update) for update in updates]
-    return sum(middles)
+    return get_middle_sum([sort_update(update) for update in incorrect_updates])
 
 
-# print("Part 1 test: ", part1(test_data))
-# print("Part 1 real: ", part1(real_data))
+print("Part 1 test: ", part1(test_data))
+print("Part 1 real: ", part1(real_data))
 print("Part 2 test: ", part2(test_data))
 print("Part 2 real: ", part2(real_data))
