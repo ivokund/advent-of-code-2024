@@ -28,6 +28,7 @@ test_data = """47|53
 97,13,75,29,47"""
 real_data = open("input.txt").read()
 
+
 def parse(text):
     rules_txt, pages_txt = text.split("\n\n")
     rules = [[int(num) for num in rule.split("|")] for rule in rules_txt.split("\n")]
@@ -35,9 +36,7 @@ def parse(text):
     return rules, updates
 
 
-def part1(text):
-    rules, updates = parse(text)
-
+def get_valid_and_invalid(rules, updates):
     def breaks_rule(rule, number, list_before, list_after):
         if rule[0] == number:  # rule[1] must not be present in list_before
             return rule[1] in list_before
@@ -54,11 +53,20 @@ def part1(text):
                 return True
         return False
 
-    def get_middle_element(update):
-        count = len(update)
-        return update[count // 2]
+    incorrect_updates = [update for update in updates if update_breaks_any_rule(update)]
+    correct_updates = [update for update in updates if update not in incorrect_updates]
 
-    correct_updates = filter(lambda update: not update_breaks_any_rule(update), updates)
+    return correct_updates, incorrect_updates
+
+
+def get_middle_element(update):
+    count = len(update)
+    return update[count // 2]
+
+
+def part1(text):
+    rules, updates = parse(text)
+    correct_updates, _ = get_valid_and_invalid(rules, updates)
     middles = [get_middle_element(update) for update in correct_updates]
 
     return sum(middles)
