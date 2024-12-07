@@ -15,25 +15,57 @@ def parse(text):
     return [[int(equation[0])] + [int(operand) for operand in equation[1].split()] for equation in equations]
 
 
+def is_true(expected_result, operand1, operand2, remaining_operands, operations):
+    if len(remaining_operands) == 0:
+        return any([operation(operand1, operand2) == expected_result for operation in operations])
+    else:
+        return any([is_true(
+                expected_result,
+                operation(operand1, operand2),
+                remaining_operands[0],
+                remaining_operands[1:],
+                operations
+        ) for operation in operations])
+
+
 def part1(text):
     equations = parse(text)
+    operations = [
+        lambda a, b: a + b,
+        lambda a, b: a * b,
+    ]
 
-    def is_true(expected_result, operand1, operand2, remaining_operands):
-        if (operand1 * operand2 == expected_result or operand1 + operand2 == expected_result) and len(remaining_operands) == 0:
-            return True
-        if len(remaining_operands) > 0:
-            if is_true(expected_result, operand1 * operand2, remaining_operands[0], remaining_operands[1:]):
-                return True
-            elif is_true(expected_result, operand1 + operand2, remaining_operands[0], remaining_operands[1:]):
-                return True
-        return False
+    return sum(
+        [equation[0] for equation in equations if is_true(
+            equation[0],
+            equation[1],
+            equation[2],
+            equation[3:],
+            operations
+        )]
+    )
 
-    true_equations = [equation for equation in equations if is_true(equation[0], equation[1], equation[2], equation[3:])]
 
-    return sum([equation[0] for equation in true_equations])
+def part2(text):
+    equations = parse(text)
+    operations = [
+        lambda a, b: a + b,
+        lambda a, b: a * b,
+        lambda a, b: int(str(a) + str(b)),
+    ]
+
+    return sum(
+        [equation[0] for equation in equations if is_true(
+            equation[0],
+            equation[1],
+            equation[2],
+            equation[3:],
+            operations
+        )]
+    )
 
 
 print("Part 1 test: ", part1(test_data))
 print("Part 1 real: ", part1(real_data))
-# print("Part 2 test: ", part2(test_data))
-# print("Part 2 real: ", part2(real_data))
+print("Part 2 test: ", part2(test_data))
+print("Part 2 real: ", part2(real_data))
