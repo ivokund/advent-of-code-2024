@@ -33,7 +33,6 @@ class Map:
         self.direction_of_guard = direction_of_guard
         self.width = width
         self.height = height
-        # print(self)
 
     def move_step(self):
         x, y = self.position_of_guard
@@ -69,19 +68,63 @@ class Map:
         return result
 
 
-def part1(text):
-    map = parse(text)
-
-    visited_nodes = [map.position_of_guard]
+def run_and_get_visited_nodes(map):
+    visited_nodes = []
     while map.guard_in_map():
         map = map.move_step()
         visited_nodes.append(map.position_of_guard)
+    return set(visited_nodes)
 
-    return len(set(visited_nodes)) - 1
+
+def part1(text):
+    map = parse(text)
+    return len(run_and_get_visited_nodes(map))
 
 
-print("Part 1 test: ", part1(test_data))
-print("Part 1 real: ", part1(real_data))
+def part2(text):
+    map = parse(text)
+
+    original_path = run_and_get_visited_nodes(map)
+    print("Original path", original_path)
+    looping_positions = []
+    i=0
+    print(len(original_path))
+    for coords in original_path:
+        i+=1
+        print("Checking", i, "of", len(original_path))
+        # print("Obstacle at", coords)
+        looping = False
+        map_with_obstacle = Map(
+            map.obstacles + [coords],
+            map.position_of_guard,
+            map.direction_of_guard,
+            map.width,
+            map.height
+        )
+        # print(map_with_obstacle)
+        past_dirs_by_pos = {}
+        while map_with_obstacle.guard_in_map() and not looping:
+            # print("  - Guard at", map_with_obstacle.position_of_guard)
+            new_map_with_obstacle = map_with_obstacle.move_step()
+            if new_map_with_obstacle.position_of_guard in past_dirs_by_pos:
+                # print("  - History", past_dirs_by_pos[new_map_with_obstacle.position_of_guard])
+                direction_changed = new_map_with_obstacle.direction_of_guard not in past_dirs_by_pos[new_map_with_obstacle.position_of_guard]
+                # print("  - Direction changed from ", past_dirs_by_pos[new_map_with_obstacle.position_of_guard], "to", new_map_with_obstacle.direction_of_guard, direction_changed)
+                looping = not direction_changed
+                # print("  - Looping", looping)
+                if looping:
+                    looping_positions += [coords]
+            map_with_obstacle = new_map_with_obstacle
+            if new_map_with_obstacle.position_of_guard not in past_dirs_by_pos:
+                past_dirs_by_pos[new_map_with_obstacle.position_of_guard] = []
+            past_dirs_by_pos[new_map_with_obstacle.position_of_guard] += [new_map_with_obstacle.direction_of_guard]
+
+        # print("  - Looping", looping)
+    print("Looping count", looping_positions)
+    print("Looping count", len(set(looping_positions)))
+
+# print("Part 1 test: ", part1(test_data))
+# print("Part 1 real: ", part1(real_data))
 # print("Part 2 test: ", part2(test_data))
-# print("Part 2 real: ", part2(real_data))
-#
+print("Part 2 real: ", part2(real_data))
+#  wrong: 1664
