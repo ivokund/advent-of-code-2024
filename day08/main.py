@@ -1,15 +1,4 @@
-test_data = """T.........
-...T......
-.T........
-..........
-..........
-..........
-..........
-..........
-..........
-.........."""
-
-test_data2 = """............
+test_data = """............
 ........0...
 .....0......
 .......0....
@@ -21,6 +10,7 @@ test_data2 = """............
 .........A..
 ............
 ............"""
+
 real_data = open("input.txt").read()
 
 
@@ -46,32 +36,39 @@ def run(text, use_resonance=False):
     all_vectors = []  # start pos, vector
     antinodes = []
     for key in coords:
-        print("For ", key)
         for coord1 in coords[key]:
             for coord2 in coords[key]:
                 if coord1 != coord2:
-                    print("Points: ", coord1, coord2)
                     dx, dy = (coord2[0] - coord1[0]), (coord2[1] - coord1[1])
+                    all_vectors.append([coord1, (dx, dy)])
                     antinode = (coord1[0] - dx), (coord1[1] - dy)
                     if antinode not in antinodes and is_in_map(antinode):
                         antinodes.append(antinode)
-                        # extra_coords.append(coord1)
-                        # extra_coords.append(coord2)
                     if use_resonance:
                         while is_in_map(antinode):
                             antinode = (antinode[0] + dx), (antinode[1] + dy)
-                            print("Antinode: ", antinode)
-
                             if antinode not in antinodes and is_in_map(antinode):
                                 antinodes.append(antinode)
-                                # extra_coords.append(coord1)
-                                # extra_coords.append(coord2)
+    part1_answer = len(antinodes)
+    if not use_resonance:
+        return part1_answer
 
-    print(antinodes)
-    return len(antinodes)
+    resonated_nodes = set([])
+    for start_pos, vector in all_vectors:
+        current_pos = start_pos
+        while is_in_map(current_pos):
+            resonated_nodes.add(current_pos)
+            current_pos = (current_pos[0] + vector[0]), (current_pos[1] + vector[1])
+        current_pos = start_pos
+        while is_in_map(current_pos):
+            resonated_nodes.add(current_pos)
+            current_pos = (current_pos[0] - vector[0]), (current_pos[1] - vector[1])
+
+    part2_answer = len(resonated_nodes)
+    return part2_answer
 
 
-print("Part 1 test: ", run(test_data2))
+print("Part 1 test: ", run(test_data))
 print("Part 1 real: ", run(real_data))
-# print("Part 2 test: ", run(test_data2, True))
-# print("Part 2 real: ", part2(real_data))
+print("Part 2 test: ", run(test_data, True))
+print("Part 2 real: ", run(real_data, True))
