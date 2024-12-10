@@ -25,21 +25,9 @@ def get_sum(blocks):
     for element in blocks:
         if element['is_file']:
             for _ in range(element['block_count']):
-                # print("-- adding sum ({} x {}) = {}".format(element['file_label'], idx, element['file_label'] * idx))
                 result += element['file_label'] * idx
                 idx += 1
     return result
-
-
-def draw(file):
-    result = ""
-    for element in file:
-        if element['is_file']:
-            result += "(" + str(element['file_label']) * element['block_count'] + ")"
-        else:
-            result += "."
-    print(result)
-    print("")
 
 
 def part1(text):
@@ -47,11 +35,8 @@ def part1(text):
     while True:
         file_indices = [i for i, block in enumerate(blocks) if block["is_file"]]
         last_file_pos = file_indices[-1] if file_indices else None
-        # print("- last_file_pos", last_file_pos)
         first_free_pos = next((idx for idx, block in enumerate(blocks) if not block["is_file"]), None)
-        # print("- first_free_pos", first_free_pos)
         if first_free_pos is None or first_free_pos >= last_file_pos:
-            # print("- breaking")
             break
 
         # create number node to add to beginning
@@ -60,24 +45,16 @@ def part1(text):
             "is_file": True,
             "file_label": blocks[last_file_pos]["file_label"]
         }
-        # print("- new_block_to_add", new_block_to_add)
 
         # handle last digit
         if blocks[last_file_pos]['block_count'] > 1:
             blocks[last_file_pos]['block_count'] -= 1
-            # print("- decremented")
         else:
             del blocks[last_file_pos]
-            # print("- deleted")
 
         # replace empty block in beginning with a shorter block
         blocks[first_free_pos] = new_block_to_add
 
-        # print("- end")
-        # draw(blocks)
-
-    # print("end")
-    # draw(blocks)
     return get_sum(blocks)
 
 
