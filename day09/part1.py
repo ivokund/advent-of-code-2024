@@ -90,5 +90,5 @@ class Test(unittest.TestCase):
         self.assertEqual(part1("1010101010101010101010"), 385)
 
     def test_part1_real(self):
-        self.assertEqual(part1(real_data), 0)
+        self.assertEqual(part1(real_data), 6337921897505)
 
