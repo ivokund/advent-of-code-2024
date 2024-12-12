@@ -17,14 +17,10 @@ Point = namedtuple("Point", ["x", "y"])
 Region = namedtuple("Region", ["plant", "points"])
 
 
-def part1(text):
+def find_regions(text):
     cols_by_rows = [list(row) for row in text.split("\n")]
 
-    regions_by_plant = {}
     plants_by_points = {}
-
-
-
 
     for y in range(len(cols_by_rows)):
         for x in range(len(cols_by_rows[y])):
@@ -32,23 +28,10 @@ def part1(text):
             point = Point(x, y)
             plants_by_points[point] = plant
 
-    # find shared edges
-    shared_edges_by_point = {}
-    for point, plant in plants_by_points.items():
-        shared_edges = 0
-        deltas = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        for dx, dy in deltas:
-            new_point = Point(point.x + dx, point.y + dy)
-            new_plant = plants_by_points.get(new_point, None)
-            if new_plant is not None and new_plant == plant:
-                shared_edges += 1
-        shared_edges_by_point[point] = shared_edges
-
-
-
     unassigned_queue = list(plants_by_points.keys())
     regions = []
     visited = set()
+
     def dfs_collect_region(point, region, level=0):
         visited.add(point)
         if (point.x, point.y) in unassigned_queue:
@@ -66,10 +49,26 @@ def part1(text):
                     dfs_collect_region(new_point, region, level + 1)
 
     while unassigned_queue:
-        # print("\n\n==== RUNNING QUEUE START FROM ", unassigned_queue[0])
         region = Region(plants_by_points.get(unassigned_queue[0]), set())
         regions.append(region)
         dfs_collect_region(unassigned_queue[0], region)
+    return regions, plants_by_points
+
+
+def part1(text):
+    regions, plants_by_points = find_regions(text)
+
+    # find shared edges
+    shared_edges_by_point = {}
+    for point, plant in plants_by_points.items():
+        shared_edges = 0
+        deltas = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        for dx, dy in deltas:
+            new_point = Point(point.x + dx, point.y + dy)
+            new_plant = plants_by_points.get(new_point, None)
+            if new_plant is not None and new_plant == plant:
+                shared_edges += 1
+        shared_edges_by_point[point] = shared_edges
 
     def get_region_price(region):
         area = len(region.points)
