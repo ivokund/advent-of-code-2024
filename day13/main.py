@@ -31,20 +31,13 @@ def part1(text):
 
     # loop 100 times
     def run_machine(machine):
-        pos = Point(0, 0)
-        winning_costs = []
-
         for a_movements in range(100):
-            # print(pos)
-            pos = Point(machine.a.dx * a_movements, machine.a.dy * a_movements)
             for b_movements in range(100):
                 pos = Point(machine.a.dx * a_movements + machine.b.dx * b_movements, machine.a.dy * a_movements + machine.b.dy * b_movements)
                 if pos == machine.target:
                     # print("Found target at A={}, B={}".format(a_movements, b_movements))
                     return a_movements * 3 + 1 * b_movements
 
-    for idx, machine in enumerate(machines):
-        print("Cost for {}: {}".format(idx, run_machine(machine)))
     return sum([run_machine(machine) or 0 for machine in machines])
 
 print("Part 1 test: ", part1(test_data))
