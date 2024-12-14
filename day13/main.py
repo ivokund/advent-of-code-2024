@@ -24,12 +24,15 @@ Point = namedtuple("Point", ["x", "y"])
 Machine = namedtuple("Machine", ["a", "b", "target"])
 
 
-def part1(text):
+def parse_input(text):
     blocks = [block.split("\n") for block in text.split("\n\n")]
     machines = [[[int(num) for num in re.findall(r'\d+', line.split(": ")[1])] for line in block] for block in blocks]
-    machines = [Machine(Movement(*machine[0]), Movement(*machine[1]), Point(*machine[2])) for machine in machines]
+    return [Machine(Movement(*machine[0]), Movement(*machine[1]), Point(*machine[2])) for machine in machines]
 
-    # loop 100 times
+
+def part1(text):
+    machines = parse_input(text)
+
     def run_machine(machine):
         for a_movements in range(100):
             for b_movements in range(100):
