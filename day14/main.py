@@ -38,37 +38,36 @@ def parse_input(text):
     return [Robot(Point(*part[0]), Movement(*part[1])) for part in parts]
 
 
+def draw(robots, grid_size):
+    counts_by_coords = {}
+    for robot in robots:
+        if robot.pos in counts_by_coords:
+            counts_by_coords[robot.pos] += 1
+        else:
+            counts_by_coords[robot.pos] = 1
+    for y in range(grid_size[1]):
+        for x in range(grid_size[0]):
+            if Point(x, y) in counts_by_coords:
+                print(counts_by_coords[Point(x, y)], end="")
+            else:
+                print(".", end="")
+        print("")
+    print("\n")
+
+
+def move(robots, grid_size):
+    grid_x, grid_y = grid_size
+    def get_next_pos(robot):
+        new_x = (robot.pos.x + robot.movement.dx) % grid_x
+        new_y = (robot.pos.y + robot.movement.dy) % grid_y
+        return Point(
+            (new_x + grid_x) % grid_x,
+            (new_y + grid_y) % grid_y
+        )
+    return [Robot(get_next_pos(robot), robot.movement) for robot in robots]
+
 def part1(text, grid_size):
     robots = parse_input(text)
-
-    def draw(robots):
-        counts_by_coords = {}
-        for robot in robots:
-            if robot.pos in counts_by_coords:
-                counts_by_coords[robot.pos] += 1
-            else:
-                counts_by_coords[robot.pos] = 1
-        for y in range(grid_size[1]):
-            for x in range(grid_size[0]):
-                if Point(x, y) in counts_by_coords:
-                    print(counts_by_coords[Point(x, y)], end="")
-                else:
-                    print(".", end="")
-            print("")
-        print("\n")
-
-    draw(robots)
-
-    def move(robots):
-        grid_x, grid_y = grid_size
-        def get_next_pos(robot):
-            new_x = (robot.pos.x + robot.movement.dx) % grid_x
-            new_y = (robot.pos.y + robot.movement.dy) % grid_y
-            return Point(
-                (new_x + grid_x) % grid_x,
-                (new_y + grid_y) % grid_y
-            )
-        return [Robot(get_next_pos(robot), robot.movement) for robot in robots]
 
     def count_by_quadrants(robots):
         width, height = grid_size[0], grid_size[1]
@@ -89,9 +88,9 @@ def part1(text, grid_size):
 
     for i in range(100):
         print("=== Movement ", i+1)
-        robots = move(robots)
+        robots = move(robots, grid_size)
         # print(robots)
-        draw(robots)
+        draw(robots, grid_size)
 
     counts = count_by_quadrants(robots)
     return reduce(mul, counts)
