@@ -28,6 +28,7 @@ real_data = open("input.txt").read()
 Point = namedtuple("Point", ["x", "y"])
 Grid = namedtuple("Grid", ["width", "height", "robot", "boxes", "walls"])
 
+
 def parse(text):
     map_text, movements_text = text.split("\n\n")
     movements = list(movements_text.replace("\n", ""))
@@ -161,8 +162,6 @@ def part1(text):
         # draw(grid)
 
     return sum([box.y * 100 + box.x for box in grid.boxes])
-
-
 
 
 print("Part 1 test: ", part1(test_data))

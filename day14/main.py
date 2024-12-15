@@ -99,6 +99,7 @@ def part2(text, grid_size):
 
     def move(robots):
         min_max_by_y = {}
+        count_by_y = {}
 
         grid_x, grid_y = grid_size
         def get_next_pos(robot):
@@ -112,13 +113,32 @@ def part2(text, grid_size):
         for robot in robots:
             new_pos = get_next_pos(robot)
             new_robots.append(Robot(new_pos, robot.movement))
+
+            if new_pos.y in count_by_y:
+                count_by_y[new_pos.y] += 1
+            else:
+                count_by_y[new_pos.y] = 1
+
             if new_pos.y not in min_max_by_y:
                 min_max_by_y[new_pos.y] = (new_pos.x, new_pos.x)
             else:
                 min_max_by_y[new_pos.y] = min(min_max_by_y[new_pos.y][0], new_pos.x), max(min_max_by_y[new_pos.y][0], new_pos.x)
-        return new_robots, min_max_by_y
+        return new_robots, min_max_by_y, count_by_y
 
-    def is_tree_like(robots, min_max_by_y):
+    def is_tree_like(robots, min_max_by_y, count_by_y):
+        # counts can only increase or decrease one line in a row only
+        last_count = count_by_y[0] if 0 in count_by_y else 0
+        last_was_decrease = False
+        for y in range(1, grid_size[1]):
+            count = count_by_y[y] if y in count_by_y else 0
+            is_decrease = count < last_count
+            last_count = count_by_y[y-1] if y-1 in count_by_y else 0
+            if is_decrease and last_was_decrease:
+                return False
+            last_was_decrease = is_decrease
+        print("numbers match")
+        draw(robots, grid_size)
+
         for y in min_max_by_y.keys():
             if min_max_by_y[y][0] == grid_size[0] - 1 - min_max_by_y[y][1]:
                 print("Tree-like found at y=", y)
@@ -132,13 +152,13 @@ def part2(text, grid_size):
     i = 0
     while True:
         i += 1
-        if i % 1000 == 0:
+        if i % 10000 == 0:
             print("Second: ", i)
-        robots, min_max_by_y = move(robots)
+        robots, min_max_by_y, count_by_y = move(robots)
         # draw(robots, grid_size)
         # print(robots)
         # print("Min max by y: ", min_max_by_y)
-        if is_tree_like(robots, min_max_by_y):
+        if is_tree_like(robots, min_max_by_y, count_by_y):
             break
 
     return i
