@@ -55,19 +55,21 @@ def draw(robots, grid_size):
     print("\n")
 
 
-def move(robots, grid_size):
-    grid_x, grid_y = grid_size
-    def get_next_pos(robot):
-        new_x = (robot.pos.x + robot.movement.dx) % grid_x
-        new_y = (robot.pos.y + robot.movement.dy) % grid_y
-        return Point(
-            (new_x + grid_x) % grid_x,
-            (new_y + grid_y) % grid_y
-        )
-    return [Robot(get_next_pos(robot), robot.movement) for robot in robots]
+
 
 def part1(text, grid_size):
     robots = parse_input(text)
+
+    def move(robots):
+        grid_x, grid_y = grid_size
+        def get_next_pos(robot):
+            new_x = (robot.pos.x + robot.movement.dx) % grid_x
+            new_y = (robot.pos.y + robot.movement.dy) % grid_y
+            return Point(
+                (new_x + grid_x) % grid_x,
+                (new_y + grid_y) % grid_y
+            )
+        return [Robot(get_next_pos(robot), robot.movement) for robot in robots]
 
     def count_by_quadrants(robots):
         width, height = grid_size[0], grid_size[1]
@@ -77,7 +79,6 @@ def part1(text, grid_size):
             ((0, width//2 - 1), (height//2 + 1, height - 1)),  # bottom left
             ((width//2 + 1, width - 1), (height//2 + 1, height - 1)),  # bottom right
         ]
-        print(quadrants)
         counts = [0 for _ in range(4)]
         for robot in robots:
             for i, (x_range, y_range) in enumerate(quadrants):
@@ -85,19 +86,67 @@ def part1(text, grid_size):
                     counts[i] += 1
         return counts
 
-
     for i in range(100):
-        print("=== Movement ", i+1)
-        robots = move(robots, grid_size)
-        # print(robots)
+        robots = move(robots)
         draw(robots, grid_size)
 
     counts = count_by_quadrants(robots)
     return reduce(mul, counts)
 
-print("Part 1 test: ", part1(test_data, (7, 11)))
-print("Part 1 real: ", part1(real_data, (101, 103)))
-# print("Part 2 test: ", part2(test_data))
-# print("Part 2 real: ", part2(real_data))
+
+def part2(text, grid_size):
+
+
+    def move(robots):
+        min_max_by_y = {}
+
+        grid_x, grid_y = grid_size
+        def get_next_pos(robot):
+            new_x = (robot.pos.x + robot.movement.dx) % grid_x
+            new_y = (robot.pos.y + robot.movement.dy) % grid_y
+            return Point(
+                (new_x + grid_x) % grid_x,
+                (new_y + grid_y) % grid_y
+            )
+        new_robots = []
+        for robot in robots:
+            new_pos = get_next_pos(robot)
+            new_robots.append(Robot(new_pos, robot.movement))
+            if new_pos.y not in min_max_by_y:
+                min_max_by_y[new_pos.y] = (new_pos.x, new_pos.x)
+            else:
+                min_max_by_y[new_pos.y] = min(min_max_by_y[new_pos.y][0], new_pos.x), max(min_max_by_y[new_pos.y][0], new_pos.x)
+        return new_robots, min_max_by_y
+
+    def is_tree_like(robots, min_max_by_y):
+        for y in min_max_by_y.keys():
+            if min_max_by_y[y][0] == grid_size[0] - 1 - min_max_by_y[y][1]:
+                print("Tree-like found at y=", y)
+                # print(robots_by_y)
+            else:
+                return False
+
+        draw(robots, grid_size)
+
+    robots = parse_input(text)
+    i = 0
+    while True:
+        i += 1
+        if i % 1000 == 0:
+            print("Second: ", i)
+        robots, min_max_by_y = move(robots)
+        # draw(robots, grid_size)
+        # print(robots)
+        # print("Min max by y: ", min_max_by_y)
+        if is_tree_like(robots, min_max_by_y):
+            break
+
+    return i
+
+
+# print("Part 1 test: ", part1(test_data, (7, 11)))
+# print("Part 1 real: ", part1(real_data, (101, 103)))
+# print("Part 2 test: ", part2(test_data, (7, 11)))
+print("Part 2 real: ", part2(real_data, (101, 103)))
 
 # wrong 98535360
