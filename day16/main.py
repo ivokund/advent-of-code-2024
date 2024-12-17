@@ -1,10 +1,24 @@
 from collections import namedtuple
 from heapq import heappush, heappop
 
-test_data = """#####
-#..E#
-#S..#
-#####"""
+# 4020 to intersection with correct way
+test_data = """#################
+#...#...#...#..E#
+#.#.#.#.#.#.#.#.#
+#.#.#.#...#...#.#
+#.#.#.#.###.#.#.#
+#...#.#.#.....#.#
+#.#.#.#.#.#####.#
+#.#...#.#.#.....#
+#.#.#####.#.###.#
+#.#.#.......#...#
+#.#.###.#####.###
+#.#.#...#.....#.#
+#.#.#.#####.###.#
+#.#.#.........#.#
+#.#.#.#########.#
+#S#.............#
+#################"""
 
 real_data = open("input.txt").read()
 
@@ -15,6 +29,11 @@ directions = {
     3: "<",
 }
 
+Point = namedtuple("Point", ["x", "y", "dir"])
+
+def print_point(self):
+    return f"({self.x},{self.y},{directions[self.dir]})"
+Point.__str__ = print_point
 
 def draw(grid, point):
     for y, row in enumerate(grid):
@@ -31,12 +50,13 @@ def parse(text):
     lines = [[1 if char == "#" else 0 for char in line] for line in text.split("\n")]
     return lines
 
-Point = namedtuple("Point", ["x", "y", "dir"])
 
 def part1(text):
     grid = parse(text)
     start = Point(1, len(grid) - 2, 1)
-    end = (len(grid[0]) - 2, 1)
+    ends = set([Point(len(grid[0]) - 2, 1, direction) for direction in directions.keys()])
+
+
 
     width = len(grid[0])
     height = len(grid)
@@ -51,59 +71,99 @@ def part1(text):
 
         if 0 <= new_x < width and 0 <= new_y < height and grid[new_y][new_x] == 0:
             neighbors.append((Point(new_x, new_y, point.dir), 1))
-            return neighbors
 
-
-        # Only if we can't move forward, add rotations
         clockwise = (point.dir + 1) % 4
         counterclockwise = (point.dir - 1) % 4
-        neighbors.append((Point(point.x, point.y, clockwise), 1002))
-        neighbors.append((Point(point.x, point.y, counterclockwise), 1002))
+        neighbors.append((Point(point.x, point.y, clockwise), 1000))
+        neighbors.append((Point(point.x, point.y, counterclockwise), 1000))
 
         return neighbors
 
-    def find_path(start, end):
+
+
+
+
+    def find_path():
         queue = [(0, start)]
         costs = {start: 0}
         came_from = {}
 
-        print(f"\nStarting at {start}, trying to reach {end}")
+        # print(f"\nStarting at {start}, trying to reach {ends}")
 
         while queue:
-            print("\nCurrent queue:", [(cost, f"({s.x},{s.y},{directions[s.dir]})") for cost,s in queue])
-            print("Current costs:", {f"({s.x},{s.y},{directions[s.dir]})": c for s,c in costs.items()})
+            # print("\nCurrent queue:", [(cost, f"({s.x},{s.y},{directions[s.dir]})") for cost,s in queue])
+            # print("Current costs:", {f"({s.x},{s.y},{directions[s.dir]})": c for s,c in costs.items()})
 
             current_cost, current_state = heappop(queue)
             current_pos = (current_state.x, current_state.y)
 
-            print(f"\nExploring: ({current_state.x},{current_state.y},{directions[current_state.dir]}) with cost {current_cost}")
+            # print(f"\nExploring: ({current_state.x},{current_state.y},{directions[current_state.dir]}) with cost {current_cost}")
 
-            if current_pos == end:
+            # print("  current state:", current_state)
+            if current_state in ends:
+                # print("   Reached end point:", current_pos)
                 return current_cost, came_from
 
             for next_state, move_cost in get_neighbors(current_state):
                 new_cost = current_cost + move_cost
 
-                print(f"  Considering: ({next_state.x},{next_state.y},{directions[next_state.dir]}) with new cost {new_cost}")
+                # print(f"  Considering: ({next_state.x},{next_state.y},{directions[next_state.dir]}) with new cost {new_cost}")
 
                 if next_state not in costs or new_cost < costs[next_state]:
-                    print(f"    -> Queueing this path (better than previous cost)")
+                    # print(f"    -> Queueing {next_state} path (cost {new_cost} is better than previous: {costs[next_state] if next_state in costs else 'None'})")
                     costs[next_state] = new_cost
                     heappush(queue, (new_cost, next_state))
-                else:
-                    print(f"    Already known cost: {costs[next_state]}")
-                    print(f"    -> Skipping (not better than previous)")
+                    came_from[next_state] = current_state
 
-            came_from[current_state] = came_from.get(current_state, current_state)
+                # else:
+                    # print(f"    Already known cost: {costs[next_state]}")
+                    # print(f"    -> Skipping (not better than previous)")
 
         return float('inf'), {}
 
     draw(grid, start)
 
-    cost, path = find_path(start, end)
-    print(cost, path)
-    for point in path.values():
-        draw(grid, point)
-    return len(path)
+    cost, path = find_path()
+    return cost
+    # print(path)
+    # Find the end point with the correct direction
+
+    end_point = (set(path) & ends).pop()
+
+    # return cost
+
+    if end_point is None:
+        print("No valid end path found.")
+    else:
+        final_path = [end_point]
+
+        while end_point in path:
+            end_point = path[end_point]
+            final_path.append(end_point)
+
+        final_path.reverse()
+
+
+        # find count where direction changed
+        turn_count = 0
+        step_forward_count = 0
+        for i in range(1, len(final_path)):
+            if final_path[i].dir != final_path[i-1].dir:
+                turn_count += 1
+            else:
+                step_forward_count += 1
+
+        print("Direction change count: ", turn_count)
+        print("Direction change count: ", step_forward_count)
+
+        print("Cost: ", cost)
+
+        return turn_count * 1000 + step_forward_count * -1
+
+        # print("Final path:")
+        # for point in final_path:
+        #     draw(grid, point)
+        # return len(final_path)
 
 print("Part 1 test: ", part1(test_data))
+print("Part 1 real: ", part1(real_data))
