@@ -56,8 +56,6 @@ def part1(text):
     start = Point(1, len(grid) - 2, 1)
     ends = set([Point(len(grid[0]) - 2, 1, direction) for direction in directions.keys()])
 
-
-
     width = len(grid[0])
     height = len(grid)
 
@@ -69,7 +67,7 @@ def part1(text):
         dx, dy = moves[point.dir]
         new_x, new_y = point.x + dx, point.y + dy
 
-        if 0 <= new_x < width and 0 <= new_y < height and grid[new_y][new_x] == 0:
+        if width > new_x >= 0 == grid[new_y][new_x] and 0 <= new_y < height:
             neighbors.append((Point(new_x, new_y, point.dir), 1))
 
         clockwise = (point.dir + 1) % 4
@@ -79,24 +77,18 @@ def part1(text):
 
         return neighbors
 
-
-
-
-
     def find_path():
         queue = [(0, start)]
         costs = {start: 0}
         came_from = {}
 
         # print(f"\nStarting at {start}, trying to reach {ends}")
-
         while queue:
             # print("\nCurrent queue:", [(cost, f"({s.x},{s.y},{directions[s.dir]})") for cost,s in queue])
             # print("Current costs:", {f"({s.x},{s.y},{directions[s.dir]})": c for s,c in costs.items()})
 
             current_cost, current_state = heappop(queue)
-            current_pos = (current_state.x, current_state.y)
-
+            # current_pos = (current_state.x, current_state.y)
             # print(f"\nExploring: ({current_state.x},{current_state.y},{directions[current_state.dir]}) with cost {current_cost}")
 
             # print("  current state:", current_state)
@@ -106,7 +98,6 @@ def part1(text):
 
             for next_state, move_cost in get_neighbors(current_state):
                 new_cost = current_cost + move_cost
-
                 # print(f"  Considering: ({next_state.x},{next_state.y},{directions[next_state.dir]}) with new cost {new_cost}")
 
                 if next_state not in costs or new_cost < costs[next_state]:
@@ -121,49 +112,28 @@ def part1(text):
 
         return float('inf'), {}
 
-    draw(grid, start)
+    # draw(grid, start)
 
     cost, path = find_path()
     return cost
     # print(path)
     # Find the end point with the correct direction
 
-    end_point = (set(path) & ends).pop()
+    # end_point = (set(path) & ends).pop()
 
     # return cost
 
-    if end_point is None:
-        print("No valid end path found.")
-    else:
-        final_path = [end_point]
+    # if end_point is None:
+    #     print("No valid end path found.")
+    # else:
+    #     final_path = [end_point]
+    #
+    #     while end_point in path:
+    #         end_point = path[end_point]
+    #         final_path.append(end_point)
+    #
+    #     final_path.reverse()
 
-        while end_point in path:
-            end_point = path[end_point]
-            final_path.append(end_point)
-
-        final_path.reverse()
-
-
-        # find count where direction changed
-        turn_count = 0
-        step_forward_count = 0
-        for i in range(1, len(final_path)):
-            if final_path[i].dir != final_path[i-1].dir:
-                turn_count += 1
-            else:
-                step_forward_count += 1
-
-        print("Direction change count: ", turn_count)
-        print("Direction change count: ", step_forward_count)
-
-        print("Cost: ", cost)
-
-        return turn_count * 1000 + step_forward_count * -1
-
-        # print("Final path:")
-        # for point in final_path:
-        #     draw(grid, point)
-        # return len(final_path)
 
 print("Part 1 test: ", part1(test_data))
 print("Part 1 real: ", part1(real_data))
