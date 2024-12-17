@@ -1,7 +1,6 @@
 from collections import namedtuple
 from heapq import heappush, heappop
 
-# 4020 to intersection with correct way
 test_data = """#################
 #...#...#...#..E#
 #.#.#.#.#.#.#.#.#
@@ -107,8 +106,8 @@ def part1(text):
                     came_from[next_state] = current_state
 
                 # else:
-                    # print(f"    Already known cost: {costs[next_state]}")
-                    # print(f"    -> Skipping (not better than previous)")
+                # print(f"    Already known cost: {costs[next_state]}")
+                # print(f"    -> Skipping (not better than previous)")
 
         return float('inf'), {}
 
