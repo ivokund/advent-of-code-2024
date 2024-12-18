@@ -70,29 +70,44 @@ class Map:
 
 def run_and_get_visited_nodes(map):
     visited_nodes = []
+    directions_by_pos = {}
     while map.guard_in_map():
         map = map.move_step()
         visited_nodes.append(map.position_of_guard)
-    return set(visited_nodes)
+        directions_by_pos[map.position_of_guard] = map.direction_of_guard
+    return set(visited_nodes), directions_by_pos
 
 
 def part1(text):
     map = parse(text)
-    return len(run_and_get_visited_nodes(map))
+    nodes, _ = run_and_get_visited_nodes(map)
+    return len(nodes)
 
 
 def part2(text):
     map = parse(text)
 
-    original_path = run_and_get_visited_nodes(map)
-    print("Original path", original_path)
+    original_path, directions = run_and_get_visited_nodes(map)
+
+    potential_obstructions = set([])
+    for node in original_path:
+        direction = directions[node]
+        if direction == (0, -1): # up
+            for y in range(0, node[1]):
+                potential_obstructions.add((node[0], y))
+        elif direction == (0, 1): # down
+            for y in range(node[1], map.height):
+                potential_obstructions.add((node[0], y))
+        elif direction == (-1, 0): # left
+            for x in range(0, node[0]):
+                potential_obstructions.add((x, node[1]))
+        elif direction == (1, 0): # right
+            for x in range(node[0], map.width):
+                potential_obstructions.add((x, node[1]))
+
     looping_positions = []
-    i=0
-    print(len(original_path))
-    for coords in original_path:
-        i+=1
-        print("Checking", i, "of", len(original_path))
-        # print("Obstacle at", coords)
+    print(len(potential_obstructions))
+    for coords in potential_obstructions:
         looping = False
         map_with_obstacle = Map(
             map.obstacles + [coords],
@@ -101,17 +116,12 @@ def part2(text):
             map.width,
             map.height
         )
-        # print(map_with_obstacle)
         past_dirs_by_pos = {}
         while map_with_obstacle.guard_in_map() and not looping:
-            # print("  - Guard at", map_with_obstacle.position_of_guard)
             new_map_with_obstacle = map_with_obstacle.move_step()
             if new_map_with_obstacle.position_of_guard in past_dirs_by_pos:
-                # print("  - History", past_dirs_by_pos[new_map_with_obstacle.position_of_guard])
                 direction_changed = new_map_with_obstacle.direction_of_guard not in past_dirs_by_pos[new_map_with_obstacle.position_of_guard]
-                # print("  - Direction changed from ", past_dirs_by_pos[new_map_with_obstacle.position_of_guard], "to", new_map_with_obstacle.direction_of_guard, direction_changed)
                 looping = not direction_changed
-                # print("  - Looping", looping)
                 if looping:
                     looping_positions += [coords]
             map_with_obstacle = new_map_with_obstacle
@@ -119,12 +129,10 @@ def part2(text):
                 past_dirs_by_pos[new_map_with_obstacle.position_of_guard] = []
             past_dirs_by_pos[new_map_with_obstacle.position_of_guard] += [new_map_with_obstacle.direction_of_guard]
 
-        # print("  - Looping", looping)
-    print("Looping count", looping_positions)
-    print("Looping count", len(set(looping_positions)))
+    return len(set(looping_positions))
 
-# print("Part 1 test: ", part1(test_data))
-# print("Part 1 real: ", part1(real_data))
-# print("Part 2 test: ", part2(test_data))
+
+print("Part 1 test: ", part1(test_data))
+print("Part 1 real: ", part1(real_data))
+print("Part 2 test: ", part2(test_data))
 print("Part 2 real: ", part2(real_data))
-#  wrong: 1664
