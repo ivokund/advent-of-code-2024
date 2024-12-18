@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 test_data = """89010123
 78121874
 87430965
@@ -10,12 +8,9 @@ test_data = """89010123
 10456732"""
 
 real_data = open("input.txt").read()
-# Point = namedtuple("Point", ["x", "y"])
 
 
-
-
-def part1(text):
+def solve(text):
     grid = [[int(num) for num in list(row)] for row in text.split("\n")]
 
     width = len(grid[0])
@@ -35,13 +30,12 @@ def part1(text):
 
     def find_paths_from(start):
         ends = set([])
-        def find_path(pos, path):
-            # print("Finding paths from ", pos)
-            # print(" - Path: ", [f"{grid[p[1]][p[0]]} ({p})" for p in path])
+        paths = []
 
+        def find_path(pos, path):
             if grid[pos[1]][pos[0]] == 9:
                 ends.add(pos)
-                # print(" - Found end")
+                paths.append(path)
                 return
 
             next_positions = find_next_valid_positions(pos)
@@ -51,7 +45,7 @@ def part1(text):
                 find_path(next_pos, path + [next_pos])
 
         find_path(start, [start])
-        return ends
+        return ends, paths
 
     start_positions = []
     for y, row in enumerate(grid):
@@ -59,16 +53,20 @@ def part1(text):
             if num == 0:
                 start_positions.append((x, y))
 
+    ends = []
+    paths = []
+    for start in start_positions:
+        end, path = find_paths_from(start)
+        ends += end
+        paths += path
 
-    return sum([len(ends) for ends in [find_paths_from(start) for start in start_positions]])
-    # for start in start_positions:
-    #     print("Start: ", start)
-    #     ends = find_paths_from(start)
-    #     score = len(ends)
-    #     print(score)
+    return len(ends), len(paths)
 
 
+test = solve(test_data)
+real = solve(real_data)
 
-
-print("Part 1 test: ", part1(test_data))
-print("Part 1 real: ", part1(real_data))
+print("Part 1 test: ", test[0])
+print("Part 1 real: ", real[0])
+print("Part 2 test: ", test[1])
+print("Part 2 real: ", real[1])
