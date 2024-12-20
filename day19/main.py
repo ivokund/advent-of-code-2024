@@ -19,61 +19,46 @@ def parse(text):
     return patterns.split(", "), designs_text.split("\n")
 
 
-def part1(text):
+def solve(text):
     patterns, designs = parse(text)
-    # patterns = sorted(patterns, key=len, reverse=True)
 
     def get_suitable_patterns(remaining_text: Text):
         return [pattern for pattern in patterns
                 if remaining_text.startswith(pattern)
                 and len(pattern) <= len(remaining_text)]
 
-    # print(f'Total designs: {len(designs)}')
-    i = 0
+    combo_counts_by_pattern = {}
 
-    is_possible_by_pattern = {}
-    def is_possible(design):
-        nonlocal i
-        # print(f'Checking design {i}.: {design}..')
-        i += 1
-
-        def find_pattern_combos(remaining_pattern, nesting = 0):
-            if remaining_pattern in is_possible_by_pattern:
-                return is_possible_by_pattern[remaining_pattern]
+    def get_pattern_combos(design):
+        def find_pattern_combos(remaining_pattern, prev_combos: int):
+            if remaining_pattern in combo_counts_by_pattern:
+                return combo_counts_by_pattern[remaining_pattern] * prev_combos
 
             if len(remaining_pattern) == 0:
-                # print(f'{"." * nesting}END!')
                 return True
 
             patterns = get_suitable_patterns(remaining_pattern)
-            # print(f'{"." * nesting}  suitable patterns: {patterns}')
-            for pattern in patterns:
-                # print(f'{"." * nesting}    using pattern: {pattern}')
-                remainder = remaining_pattern[len(pattern):]
+            num_of_combos = 0
+            for next_pattern in patterns:
+                remainder = remaining_pattern[len(next_pattern):]
+                num_of_combos += find_pattern_combos(remainder, prev_combos)
+            combo_counts_by_pattern[remaining_pattern] = num_of_combos
+            return num_of_combos * prev_combos
 
-                # print(f'{"." * nesting}    remainder: {remainder}')
-                if find_pattern_combos(remainder, nesting + 2):
-                    is_possible_by_pattern[remainder] = True
-                    return True
-                else:
-                    is_possible_by_pattern[remainder] = False
-        f = find_pattern_combos(design, 0)
-        # print(f'Found: {f}')
-        return f
+        return find_pattern_combos(design, 1)
 
-    # designs = [designs[3]]
+    possibles = [get_pattern_combos(design) for design in designs]
 
-    # used = is_possible(designs[2])
-    # print(used)
+    part1 = len([design for design in possibles if design])
+    part2 = sum(possibles)
+    return part1, part2
 
 
-    possibles = [design for design in designs if is_possible(design)]
-    # print(possibles)
-    return len(possibles)
+part1_test, part2_test = solve(test_data)
+part1_real, part2_real = solve(real_data)
 
+print("Part 1 test: ", part1_test)
+print("Part 1 real: ", part1_real)
+print("Part 2 test: ", part2_test)
+print("Part 2 real: ", part2_real)
 
-
-print("Part 1 test: ", part1(test_data))
-print("Part 1 real: ", part1(real_data))
-# print("Part 2 test: ", part2(test_data))
-# print("Part 2 real: ", part2(real_data))
