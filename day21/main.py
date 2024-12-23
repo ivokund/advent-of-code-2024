@@ -188,7 +188,7 @@ class Day21(unittest.TestCase):
 
     def test_part1(self):
         self.assertEqual(126384, part1(test_data))
-        self.assertEqual(111, part1(real_data))
+        self.assertEqual(157892, part1(real_data))
 
 
 def part1(text):
@@ -203,36 +203,26 @@ def part1(text):
         for sequence in paths:
             different_lengths.add(len(sequence))
         min_l, max_l = min(list(different_lengths)), max(list(different_lengths))
-        # print(f"  - Got {len(different_lengths)} different lengths: {min_l} - {max_l}")
 
         paths_with_min_length = set([path for path in paths if len(path) == min_l])
         return paths_with_min_length, min_l
 
     def get_min_sequence_length(code):
-        # print("Code:", code)
+        print("Code:", code)
         robot_1_paths = numeric_pad.get_paths_for_key_sequence(code)
-        robot_1_paths_short, r1_min = discard_longer_paths(robot_1_paths)
+        prev_paths, r_min = discard_longer_paths(robot_1_paths)
 
-        # print(f"Robot 1 paths, keeping {len(robot_1_paths_short)}/{len(robot_1_paths)} paths, with min len: {r1_min}:")
+        robot_count = 2
 
-        robot_2_paths = set()
-        for robot_1_path in robot_1_paths:
-            # print(f"  - {robot_1_path}")
-            robot_2_paths.update(directional_pad_1.get_paths_for_key_sequence(robot_1_path))
+        for robot_num in range(0, robot_count):
+            print("Robot", robot_num)
+            robot_paths = set()
+            for robot_path in prev_paths:
+                robot_paths.update(directional_pad_1.get_paths_for_key_sequence(robot_path))
 
-        # print("Robot 2 paths:", len(robot_2_paths))
-        robot_2_paths, r2_min = discard_longer_paths(robot_2_paths)
-        # print(f"Robot 2 done, after cleanup: {len(robot_2_paths)} paths, min len: {r2_min}")
+            prev_paths, r_min = discard_longer_paths(robot_paths)
 
-        robot_3_paths = set()
-        for robot_2_path in robot_2_paths:
-            # print(f"      -  {robot_2_path}")
-            robot_3_paths.update(directional_pad_2.get_paths_for_key_sequence(robot_2_path))
-        # print("Robot 3 paths:", len(robot_3_paths))
-        robot_3_paths, r3_min = discard_longer_paths(robot_3_paths)
-        # print(f"Robot 3 done, after cleanup: {len(robot_3_paths)} paths, min len: {r3_min}")
-
-        return r3_min
+        return r_min
 
     def get_complexity(code):
         return get_min_sequence_length(code) * int("".join([str(num) for num in code if num != 'A']))
