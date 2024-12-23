@@ -1,4 +1,4 @@
-from collections import namedtuple
+from utils.bron_kerbosch import find_cliques
 
 test_data = """kh-tc
 qp-kh
@@ -36,7 +36,8 @@ td-yn"""
 
 real_data = open("input.txt").read()
 
-def part1(text):
+
+def parse(text):
     computers = {}
     for line in text.split("\n"):
         c1, c2 = line.split("-")
@@ -46,6 +47,11 @@ def part1(text):
             computers[c2] = set([])
         computers[c1].add(c2)
         computers[c2].add(c1)
+    return computers
+
+
+def part1(text):
+    computers = parse(text)
 
     def are_3_linked(c1, c2, c3):
         return (
@@ -65,9 +71,15 @@ def part1(text):
     return len(three_pairs)
 
 
+def part2(text):
+    computers = parse(text)
+    cliques = find_cliques(computers)
+    cliques_by_length = sorted(cliques, key=lambda x: len(x), reverse=True)
+    nodes = sorted(cliques_by_length[0])
+    return ",".join(nodes)
 
 
 print("Part 1 test: ", part1(test_data))
 print("Part 1 real: ", part1(real_data))
-# print("Part 2 test: ", part2(test_data))
-# print("Part 2 real: ", part2(real_data))
+print("Part 2 test: ", part2(test_data))
+print("Part 2 real: ", part2(real_data))
