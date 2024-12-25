@@ -108,4 +108,4 @@ class Day25Tests(unittest.TestCase):
 
     def test_part1(self):
         self.assertEqual(part1(test_data), 3)
-        self.assertEqual(part1(real_data), 3)
+        self.assertEqual(part1(real_data), 3127)
