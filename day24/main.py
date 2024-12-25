@@ -68,7 +68,7 @@ class Day24Tests(unittest.TestCase):
 
     def test_part1(self):
         self.assertEqual(part1(test_data), 4)
-        self.assertEqual(part1(real_data), 4)
+        self.assertEqual(part1(real_data), 55920211035878)
 
 
 
